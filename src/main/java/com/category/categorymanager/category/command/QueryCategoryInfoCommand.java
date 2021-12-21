@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class QueryCategoryInfoCommand {
     private Integer categoryParentSeq;
+    public Integer getCategoryParentSeq() {
+        return categoryParentSeq == null ? 0: categoryParentSeq;
+    }
     private String categoryName;
 
     @Builder

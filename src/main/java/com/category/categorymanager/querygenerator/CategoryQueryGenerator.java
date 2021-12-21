@@ -3,10 +3,10 @@ package com.category.categorymanager.querygenerator;
 import com.category.categorymanager.category.command.QueryCategoryInfoCommand;
 import com.category.categorymanager.category.dto.CategoryInfoDto;
 import com.category.categorymanager.category.entity.QCategoryInfo;
+import com.google.common.base.Strings;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -22,8 +22,8 @@ public class CategoryQueryGenerator {
 
     protected JPAQueryFactory jpaQueryFactory;
 
-    public CategoryQueryGenerator() {
-        this.jpaQueryFactory = new JPAQueryFactory(this.entityManager);
+    public CategoryQueryGenerator(EntityManager entityManager) {
+        this.jpaQueryFactory = new JPAQueryFactory(entityManager);
     }
 
     public List<CategoryInfoDto> selectCategoryInfo(QueryCategoryInfoCommand command) {
@@ -31,7 +31,7 @@ public class CategoryQueryGenerator {
         QCategoryInfo categoryInfoDepth3 = new QCategoryInfo("qci3");
 
         BooleanBuilder whereClause = new BooleanBuilder();
-        if (!Strings.isNotBlank(command.getCategoryName())) {
+        if (!Strings.isNullOrEmpty(command.getCategoryName())) {
             whereClause.or(categoryInfo.categoryName.like("%" + command.getCategoryName() + "%"));
             whereClause.or(categoryInfoDepth2.categoryName.like("%" + command.getCategoryName() + "%"));
             whereClause.or(categoryInfoDepth3.categoryName.like("%" + command.getCategoryName() + "%"));
