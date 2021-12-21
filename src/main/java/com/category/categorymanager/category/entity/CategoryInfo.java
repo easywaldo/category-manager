@@ -1,5 +1,6 @@
 package com.category.categorymanager.category.entity;
 
+import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -54,5 +55,12 @@ public class CategoryInfo {
         this.isDelete = isDelete;
         this.createDt = createDt;
         this.updateDt = updateDt;
+    }
+
+    public CategoryInfo updateCategory(UpdateCategoryInfoCommand updateCommand) {
+        this.categoryName = updateCommand.getCategoryName();
+        this.isDelete = updateCommand.getIsDelete();
+        this.parentSeq = updateCommand.getParentSeq();
+        return this;
     }
 }
