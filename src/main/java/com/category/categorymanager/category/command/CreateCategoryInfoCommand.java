@@ -1,4 +1,4 @@
-package com.category.categorymanager.category.dto;
+package com.category.categorymanager.category.command;
 
 import lombok.Builder;
 import lombok.Getter;
