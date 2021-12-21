@@ -62,9 +62,9 @@ class CategoryQueryGeneratorTest {
 
         // assert
         assertNotNull(result);
-        assertEquals(result.size(), 3);
-        assertEquals(result.stream().map(CategoryInfoDto::getCategoryName).collect(Collectors.toList()),
-            List.of("Women", "Apparel", "Outer"));
+        assertEquals(3, result.size());
+        assertEquals(List.of("Women", "Apparel", "Outer"),
+            result.stream().map(CategoryInfoDto::getCategoryName).collect(Collectors.toList()));
     }
 
 }
