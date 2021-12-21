@@ -62,10 +62,11 @@ class CategoryInfoServiceTest {
 
 
         // act
-        categoryInfoService.updateCategoryInfo(updateCommand);
+        var updated = categoryInfoService.updateCategoryInfo(updateCommand);
 
         // assert
         var result = categoryInfoRepository.findById(categoryInfoSeq);
-        assertEquals("SHOES", result.get().getCategoryName());
+        assertEquals("SHOES", result.get().getCategoryName());;
+        assertEquals("SHOES", updated.getCategoryName());
     }
 }
