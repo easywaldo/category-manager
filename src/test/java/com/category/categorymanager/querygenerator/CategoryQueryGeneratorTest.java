@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,9 +17,6 @@ class CategoryQueryGeneratorTest {
 
     @Autowired
     public CategoryQueryGenerator queryGenerator;
-
-    @Autowired
-    public EntityManager entityManager;
 
     @Test
     public void 카테고리_데이터가_존재하는_경우_쿼리제너레이터가_카테고리_데이터를_리턴한다() {
