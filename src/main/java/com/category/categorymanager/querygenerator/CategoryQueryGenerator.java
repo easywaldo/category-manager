@@ -26,7 +26,36 @@ public class CategoryQueryGenerator {
         this.jpaQueryFactory = new JPAQueryFactory(entityManager);
     }
 
-    public List<CategoryInfoDto> selectCategoryInfo(QueryCategoryInfoCommand command) {
+    public List<CategoryInfoDto> selectCategoryInfo(Integer categoryInfoSeq) {
+        QCategoryInfo categoryInfoDepth2 = new QCategoryInfo("qci2");
+        QCategoryInfo categoryInfoDepth3 = new QCategoryInfo("qci3");
+
+        BooleanBuilder whereClause = new BooleanBuilder();
+        whereClause.or(categoryInfo.parentSeq.eq(categoryInfoSeq));
+        whereClause.or(categoryInfoDepth2.parentSeq.eq(categoryInfoSeq));
+        whereClause.or(categoryInfoDepth3.parentSeq.eq(categoryInfoSeq));
+
+        whereClause.or(categoryInfo.categoryInfoSeq.eq(categoryInfoSeq));
+        whereClause.or(categoryInfoDepth2.categoryInfoSeq.eq(categoryInfoSeq));
+        whereClause.or(categoryInfoDepth3.categoryInfoSeq.eq(categoryInfoSeq));
+
+        return this.jpaQueryFactory.from(categoryInfo)
+            .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))
+            .leftJoin(categoryInfoDepth3).on(categoryInfoDepth3.parentSeq.eq(categoryInfoDepth2.categoryInfoSeq))
+            .where(whereClause)
+            .select(Projections.fields(CategoryInfoDto.class,
+                categoryInfo.categoryInfoSeq,
+                categoryInfo.categoryName,
+                categoryInfoDepth2.categoryInfoSeq.as("depth2CategoryInfoSeq"),
+                categoryInfoDepth2.categoryName.as("depth2CategoryName"),
+                categoryInfoDepth2.parentSeq.as("depth2ParentSeq"),
+                categoryInfoDepth3.categoryInfoSeq.as("depth3CategoryInfoSeq"),
+                categoryInfoDepth3.categoryName.as("depth3CategoryName"),
+                categoryInfoDepth3.parentSeq.as("depth3ParentSeq")))
+            .fetch();
+    }
+
+    public List<CategoryInfoDto> selectCategoryInfoList(QueryCategoryInfoCommand command) {
         QCategoryInfo categoryInfoDepth2 = new QCategoryInfo("qci2");
         QCategoryInfo categoryInfoDepth3 = new QCategoryInfo("qci3");
 

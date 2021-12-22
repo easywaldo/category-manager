@@ -16,5 +16,19 @@ spring:
     hibernate:
       ddl-auto: create
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 api:
   key: 3xCv29981_Tx091dUx98_84PTx905EB
+
+logging:
+  level:
+    root: info
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE

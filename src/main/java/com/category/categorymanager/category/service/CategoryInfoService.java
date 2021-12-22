@@ -51,7 +51,7 @@ public class CategoryInfoService {
 
     @Transactional
     public void deleteCategoryInfo(DeleteCategoryInfoCommand deleteCommand) {
-        var targetCategory = this.categoryQueryGenerator.selectCategoryInfo(
+        var targetCategory = this.categoryQueryGenerator.selectCategoryInfoList(
             QueryCategoryInfoCommand.builder()
                 .categoryParentSeq(deleteCommand.getCategoryInfoSeq())
                 .build());
