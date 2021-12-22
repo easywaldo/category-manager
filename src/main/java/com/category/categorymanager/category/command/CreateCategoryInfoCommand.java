@@ -24,7 +24,10 @@ public class CreateCategoryInfoCommand implements RequestValidator {
     @Max(value = 3)
     private Integer categoryDepth;
     private Boolean isDelete;
-    @Min(value = 1)
+    public Boolean getIsDelete() {
+        return isDelete != null && isDelete;
+    }
+    @Min(value = 0)
     private Integer parentSeq;
     @Min(value = 1)
     private Integer categoryInfoSeq;

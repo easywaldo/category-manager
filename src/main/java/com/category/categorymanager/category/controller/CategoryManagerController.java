@@ -5,6 +5,7 @@ import com.category.categorymanager.category.service.CategoryInfoService;
 import com.category.categorymanager.config.validator.CustomValidator;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.net.URI;
 
 @RestController
 public class CategoryManagerController {
@@ -36,6 +39,8 @@ public class CategoryManagerController {
         }
         var categorySeq = categoryInfoService.createCategoryInfo(createCommand);
         createCommand.setCategoryInfoSeq(categorySeq);
-        return Mono.just(ResponseEntity.accepted().body(createCommand));
+        return Mono.just(ResponseEntity.created(
+            URI.create(String.format("/category/%s", categorySeq)))
+            .body(createCommand));
     }
 }
