@@ -2,12 +2,9 @@ package com.category.categorymanager.category.service;
 
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
 import com.category.categorymanager.category.command.DeleteCategoryInfoCommand;
-import com.category.categorymanager.category.command.QueryCategoryInfoCommand;
 import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
-import com.category.categorymanager.category.dto.CategoryInfoDto;
 import com.category.categorymanager.category.entity.CategoryInfo;
 import com.category.categorymanager.category.repository.CategoryInfoRepository;
-import com.category.categorymanager.querygenerator.CategoryQueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +15,10 @@ import java.util.stream.Collectors;
 @Service
 public class CategoryInfoService {
     private final CategoryInfoRepository categoryInfoRepository;
-    private final CategoryQueryGenerator categoryQueryGenerator;
 
     @Autowired
-    public CategoryInfoService(CategoryInfoRepository categoryInfoRepository,
-                               CategoryQueryGenerator categoryQueryGenerator) {
+    public CategoryInfoService(CategoryInfoRepository categoryInfoRepository) {
         this.categoryInfoRepository = categoryInfoRepository;
-        this.categoryQueryGenerator = categoryQueryGenerator;
     }
 
     @Transactional
@@ -51,14 +45,29 @@ public class CategoryInfoService {
 
     @Transactional
     public void deleteCategoryInfo(DeleteCategoryInfoCommand deleteCommand) {
-        var targetCategory = this.categoryQueryGenerator.selectCategoryInfoList(
-            QueryCategoryInfoCommand.builder()
-                .categoryParentSeq(deleteCommand.getCategoryInfoSeq())
-                .build());
-
-        this.categoryInfoRepository.deleteAllByIdInBatch(
-            targetCategory.stream()
-                .map(CategoryInfoDto::getCategoryInfoSeq)
-                .collect(Collectors.toList()));
+        var deleteTarget = this.categoryInfoRepository.findById(deleteCommand.getCategoryInfoSeq());
+        if (deleteTarget.isPresent()) {
+            var depth = deleteTarget.get().getCategoryDepth();
+            switch (depth) {
+                case 3:
+                    this.categoryInfoRepository.deleteById(deleteCommand.getCategoryInfoSeq());
+                    break;
+                case 2:
+                    var depth3List = this.categoryInfoRepository.findByParentSeqAndCategoryDepth(
+                        deleteCommand.getCategoryInfoSeq(), 3);
+                    this.categoryInfoRepository.deleteAllByIdInBatch(depth3List.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()));
+                    this.categoryInfoRepository.deleteById(deleteCommand.getCategoryInfoSeq());
+                    break;
+                case 1:
+                    var depth2List = this.categoryInfoRepository.findByParentSeqAndCategoryDepth(
+                        deleteCommand.getCategoryInfoSeq(), 2);
+                    depth3List = this.categoryInfoRepository.findByParentSeqInAndCategoryDepth(
+                        depth2List.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()), 3);
+                    this.categoryInfoRepository.deleteAllByIdInBatch(depth3List.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()));
+                    this.categoryInfoRepository.deleteAllByIdInBatch(depth2List.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()));
+                    this.categoryInfoRepository.deleteById(deleteCommand.getCategoryInfoSeq());
+                    break;
+            }
+        }
     }
 }
