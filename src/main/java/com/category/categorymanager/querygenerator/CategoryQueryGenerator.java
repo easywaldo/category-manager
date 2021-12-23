@@ -36,6 +36,10 @@ public class CategoryQueryGenerator {
 
         SQLTemplates templates = H2Templates.builder().build();
         JPASQLQuery<?> mainQuery = new JPASQLQuery<Void>(this.entityManager, templates);
+        BooleanBuilder whereClause = new BooleanBuilder();
+        if (!categoryInfoSeq.equals(0)) {
+            whereClause.and(categoryInfo.categoryInfoSeq.eq(categoryInfoSeq));
+        }
 
         var mediumCategoryQuery = SQLExpressions
             .select(
@@ -48,7 +52,7 @@ public class CategoryQueryGenerator {
             )
             .from(categoryInfo)
             .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))
-            .where(categoryInfo.categoryInfoSeq.eq(categoryInfoSeq));
+            .where(whereClause);
 
         return mainQuery.from(mediumCategoryQuery, Expressions.stringPath("mediumCategoryView"))
             .innerJoin(categoryInfoTable).on(

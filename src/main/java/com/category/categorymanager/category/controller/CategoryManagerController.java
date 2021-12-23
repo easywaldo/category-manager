@@ -7,7 +7,9 @@ import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
 import com.category.categorymanager.category.service.CategoryInfoService;
 import com.category.categorymanager.config.validator.CustomValidator;
 import com.category.categorymanager.querygenerator.CategoryQueryGenerator;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -17,6 +19,7 @@ import reactor.core.publisher.Mono;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.net.URI;
+import java.util.Optional;
 
 @RestController
 public class CategoryManagerController {
@@ -48,10 +51,10 @@ public class CategoryManagerController {
             .body(createCommand));
     }
 
-    @ApiOperation(value = "Get category")
-    @GetMapping("/category/{categoryInfoSeq}")
-    public Mono<ResponseEntity<?>> selectCategory(@PathVariable Integer categoryInfoSeq) {
-        var result = this.categoryQueryGenerator.selectCategoryInfo(categoryInfoSeq);
+    @ApiOperation(value = "Get category", notes = "categoryInfoSeq 필수값이 아니도록 설정이 되어 있으며 swagger ui 상으로는 입력을 해야 한다.")
+    @GetMapping(value = {"/category", "/category/{categoryInfoSeq}"})
+    public Mono<ResponseEntity<?>> selectCategory(@PathVariable(required = false, name = "categoryInfoSeq") Optional<Integer> categoryInfoSeq) {
+        var result = this.categoryQueryGenerator.selectCategoryInfo(categoryInfoSeq.orElse(0));
         return Mono.just(ResponseEntity.ok().body(result));
     }
 
