@@ -1,7 +1,7 @@
 package com.category.categorymanager.category.controller;
 
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
-import com.category.categorymanager.category.command.QueryCategoryInfoCommand;
+import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
 import com.category.categorymanager.category.service.CategoryInfoService;
 import com.category.categorymanager.config.validator.CustomValidator;
 import com.category.categorymanager.querygenerator.CategoryQueryGenerator;
@@ -50,6 +50,13 @@ public class CategoryManagerController {
     @GetMapping("/category/{categoryInfoSeq}")
     public Mono<ResponseEntity<?>> selectCategory(@PathVariable Integer categoryInfoSeq) {
         var result = this.categoryQueryGenerator.selectCategoryInfo(categoryInfoSeq);
+        return Mono.just(ResponseEntity.ok().body(result));
+    }
+
+    @ApiOperation(value = "Update category")
+    @PutMapping("/category/updateCategory}")
+    public Mono<ResponseEntity<?>> updateCategory(@RequestBody UpdateCategoryInfoCommand updateCommand) {
+        var result = this.categoryInfoService.updateCategoryInfo(updateCommand);
         return Mono.just(ResponseEntity.ok().body(result));
     }
 }
