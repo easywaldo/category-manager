@@ -100,14 +100,14 @@ class CategoryInfoServiceTest {
         categoryInfoService.bulkInsertCategoryInfo(bulkInsertCommand);
 
         DeleteCategoryInfoCommand deleteCommand = DeleteCategoryInfoCommand.builder()
-            .categoryInfoSeq(0)
+            .categoryInfoSeq(1)
             .build();
 
         // act
         this.categoryInfoService.deleteCategoryInfo(deleteCommand);
 
         // assert
-        var result = this.categoryInfoRepository.findAll();
+        var result = this.categoryInfoRepository.findAllById(List.of(1,2,3));
         assertEquals(0, result.size());
     }
 }
