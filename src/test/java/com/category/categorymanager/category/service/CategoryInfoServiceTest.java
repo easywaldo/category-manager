@@ -8,9 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.event.annotation.BeforeTestExecution;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -23,6 +23,7 @@ class CategoryInfoServiceTest {
     @Autowired
     public CategoryInfoRepository categoryInfoRepository;
 
+    @BeforeTestExecution
     @BeforeEach
     public void setUp() {
         categoryInfoRepository.deleteAll();
@@ -113,42 +114,39 @@ class CategoryInfoServiceTest {
     }
 
     @Test
-    public void 카테고리를_삭제하는_경우_해당하지_않는_카테고리는_삭제가_되지_않는지_서비스를_호출하여_확인한다() {
+    public void 카테고리를_삭제하는_경우_해당하지_않는_카테고리는_삭제가_되지_않는지_서비스를_호출하여_확인한다() throws InterruptedException {
         // arrange
-        var bulkInsertCommand = List.of(
+        var foo = this.categoryInfoRepository.save(
             CreateCategoryInfoCommand.builder()
-                .categoryInfoSeq(5)
                 .categoryDepth(1)
                 .categoryName("FOO")
                 .parentSeq(0)
-                .build(),
+                .build().toEntity());
+        var bar = this.categoryInfoRepository.save(
             CreateCategoryInfoCommand.builder()
-                .categoryInfoSeq(6)
                 .categoryDepth(1)
                 .categoryName("BAR")
                 .parentSeq(0)
-                .build(),
+                .build().toEntity());
+        var baz = this.categoryInfoRepository.save(
             CreateCategoryInfoCommand.builder()
-                .categoryInfoSeq(7)
                 .categoryDepth(2)
                 .categoryName("BAZ")
-                .parentSeq(6)
-                .build());
-        this.categoryInfoRepository.saveAll(
-            bulkInsertCommand.stream().map(
-                CreateCategoryInfoCommand::toEntity).collect(Collectors.toList()));
-
+                .parentSeq(bar.getCategoryInfoSeq())
+                .build().toEntity());
         DeleteCategoryInfoCommand deleteCommand = DeleteCategoryInfoCommand.builder()
-            .categoryInfoSeq(6)
+            .categoryInfoSeq(bar.getCategoryInfoSeq())
             .build();
 
         // act
         this.categoryInfoService.deleteCategoryInfo(deleteCommand);
 
         // assert
-        var deleteResult = this.categoryInfoRepository.findAllById(List.of(6,7));
+        var deleteResult = this.categoryInfoRepository.findAllById(
+            List.of(bar.getCategoryInfoSeq(), baz.getCategoryInfoSeq()));
         assertEquals(0, deleteResult.size());
-        var notDeleteResult = this.categoryInfoRepository.findAllById(List.of(5));
+        var notDeleteResult = this.categoryInfoRepository.findAllById(
+            List.of(foo.getCategoryInfoSeq()));
         assertEquals(1, notDeleteResult.size());
     }
 }
