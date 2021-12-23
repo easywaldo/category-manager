@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -109,5 +110,45 @@ class CategoryInfoServiceTest {
         // assert
         var result = this.categoryInfoRepository.findAllById(List.of(1,2,3));
         assertEquals(0, result.size());
+    }
+
+    @Test
+    public void 카테고리를_삭제하는_경우_해당하지_않는_카테고리는_삭제가_되지_않는지_서비스를_호출하여_확인한다() {
+        // arrange
+        var bulkInsertCommand = List.of(
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(5)
+                .categoryDepth(1)
+                .categoryName("FOO")
+                .parentSeq(0)
+                .build(),
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(6)
+                .categoryDepth(1)
+                .categoryName("BAR")
+                .parentSeq(0)
+                .build(),
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(7)
+                .categoryDepth(2)
+                .categoryName("BAZ")
+                .parentSeq(6)
+                .build());
+        this.categoryInfoRepository.saveAll(
+            bulkInsertCommand.stream().map(
+                CreateCategoryInfoCommand::toEntity).collect(Collectors.toList()));
+
+        DeleteCategoryInfoCommand deleteCommand = DeleteCategoryInfoCommand.builder()
+            .categoryInfoSeq(6)
+            .build();
+
+        // act
+        this.categoryInfoService.deleteCategoryInfo(deleteCommand);
+
+        // assert
+        var deleteResult = this.categoryInfoRepository.findAllById(List.of(6,7));
+        assertEquals(0, deleteResult.size());
+        var notDeleteResult = this.categoryInfoRepository.findAllById(List.of(5));
+        assertEquals(1, notDeleteResult.size());
     }
 }
