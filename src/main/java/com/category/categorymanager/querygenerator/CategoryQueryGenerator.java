@@ -42,7 +42,9 @@ public class CategoryQueryGenerator {
                 categoryInfo.categoryInfoSeq.as("categoryInfoSeq"),
                 categoryInfoDepth2.categoryInfoSeq.as("categoryInfoSeqDepth2"),
                 categoryInfo.categoryName.as("categoryName"),
-                categoryInfoDepth2.categoryName.as("depth2CategoryName")
+                categoryInfo.parentSeq,
+                categoryInfoDepth2.categoryName.as("depth2CategoryName"),
+                categoryInfoDepth2.parentSeq.as("depth2ParentSeq")
             )
             .from(categoryInfo)
             .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))
@@ -53,24 +55,28 @@ public class CategoryQueryGenerator {
                 categoryInfoTable.categoryInfoSeq.eq(CustomBeanPath.getIntegerPath("mediumCategoryView", "categoryInfoSeq")))
             .leftJoin(categoryInfoDepth3).on(categoryInfoDepth3.parentSeq.eq(CustomBeanPath.getIntegerPath("mediumCategoryView", "categoryInfoSeqDepth2")))
             .select(Projections.fields(CategoryInfoDto.class,
+                categoryInfoTable.categoryDepth,
+                categoryInfoTable.parentSeq,
                 CustomBeanPath.getIntegerPath("mediumCategoryView", "categoryInfoSeq").as("categoryInfoSeq"),
                 CustomBeanPath.getIntegerPath("mediumCategoryView", "categoryInfoSeqDepth2").as("depth2CategoryInfoSeq"),
+                CustomBeanPath.getIntegerPath("mediumCategoryView", "depth2ParentSeq").as("depth2ParentSeq"),
                 categoryInfoDepth3.categoryInfoSeq.as("depth3CategoryInfoSeq"),
+                categoryInfoDepth3.parentSeq.as("depth3ParentSeq"),
                 CustomBeanPath.getStringPath("mediumCategoryView", "categoryName").as("categoryName"),
                 CustomBeanPath.getStringPath("mediumCategoryView", "depth2CategoryName").as("depth2CategoryName"),
                 categoryInfoDepth3.categoryName.as("depth3CategoryName")))
             .fetch();
     }
 
-    public List<CategoryInfoDto> selectCategoryInfoList(QueryCategoryInfoCommand command) {
+    public List<CategoryInfoDto> queryCategoryInfoList(QueryCategoryInfoCommand command) {
         QCategoryInfo categoryInfoDepth2 = new QCategoryInfo("qci2");
         QCategoryInfo categoryInfoDepth3 = new QCategoryInfo("qci3");
 
         BooleanBuilder whereClause = new BooleanBuilder();
         if (!Strings.isNullOrEmpty(command.getCategoryName())) {
-            whereClause.or(categoryInfo.categoryName.like("%" + command.getCategoryName() + "%"));
-            whereClause.or(categoryInfoDepth2.categoryName.like("%" + command.getCategoryName() + "%"));
-            whereClause.or(categoryInfoDepth3.categoryName.like("%" + command.getCategoryName() + "%"));
+            whereClause.or(categoryInfo.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
+            whereClause.or(categoryInfoDepth2.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
+            whereClause.or(categoryInfoDepth3.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
         }
 
         if (command.getCategoryParentSeq() > 0) {
@@ -81,11 +87,13 @@ public class CategoryQueryGenerator {
 
         return this.jpaQueryFactory.from(categoryInfo)
             .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))
-            .leftJoin(categoryInfoDepth3).on(categoryInfoDepth3.parentSeq.eq(categoryInfo.categoryInfoSeq))
+            .leftJoin(categoryInfoDepth3).on(categoryInfoDepth3.parentSeq.eq(categoryInfoDepth2.categoryInfoSeq))
             .where(whereClause)
             .select(Projections.fields(CategoryInfoDto.class,
                 categoryInfo.categoryInfoSeq,
                 categoryInfo.categoryName,
+                categoryInfo.categoryDepth,
+                categoryInfo.parentSeq,
                 categoryInfoDepth2.categoryInfoSeq.as("depth2CategoryInfoSeq"),
                 categoryInfoDepth2.categoryName.as("depth2CategoryName"),
                 categoryInfoDepth2.parentSeq.as("depth2ParentSeq"),

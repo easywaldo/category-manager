@@ -2,6 +2,7 @@ package com.category.categorymanager.category.controller;
 
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
 import com.category.categorymanager.category.command.DeleteCategoryInfoCommand;
+import com.category.categorymanager.category.command.QueryCategoryInfoCommand;
 import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
 import com.category.categorymanager.category.service.CategoryInfoService;
 import com.category.categorymanager.config.validator.CustomValidator;
@@ -67,4 +68,13 @@ public class CategoryManagerController {
         this.categoryInfoService.deleteCategoryInfo(deleteCommand);
         return Mono.just(ResponseEntity.ok().body(true));
     }
+
+    @ApiOperation(value = "Query category")
+    @PostMapping("/category/queryCategory")
+    public Mono<ResponseEntity<?>> selectCategory(@RequestBody QueryCategoryInfoCommand queryCommand) {
+        var result = this.categoryQueryGenerator.queryCategoryInfoList(queryCommand);
+        return Mono.just(ResponseEntity.ok().body(result));
+    }
+
+
 }

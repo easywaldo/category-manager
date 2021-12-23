@@ -58,7 +58,7 @@ class CategoryQueryGeneratorTest {
             .build();
 
         // act
-        var result = queryGenerator.selectCategoryInfoList(command);
+        var result = queryGenerator.queryCategoryInfoList(command);
 
         // assert
         assertNotNull(result);
