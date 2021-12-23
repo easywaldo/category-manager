@@ -41,6 +41,13 @@ public class CategoryManagerApplication {
                 .categoryName("Outer")
                 .isDelete(false)
                 .build());
+            categoryInfoRepository.save(CategoryInfo.builder()
+                .parentSeq(2)
+                .categoryInfoSeq(4)
+                .categoryDepth(3)
+                .categoryName("Pants")
+                .isDelete(false)
+                .build());
         };
     }
 

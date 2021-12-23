@@ -9,6 +9,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -39,15 +41,15 @@ public class CategoryManagerControllerTest {
             .expectBody(CreateCategoryInfoCommand.class)
             .value(category -> {
                 assertThat(category.getCategoryName()).isNotNull();
-                assertThat(category.getCategoryInfoSeq()).isEqualTo(4);
+                assertThat(category.getCategoryInfoSeq()).isEqualTo(5);
                 assertThat(category.getIsDelete()).isEqualTo(false);
             });
 
         // assert
-        var result = this.categoryInfoRepository.findById(4).get();
+        var result = this.categoryInfoRepository.findById(5).get();
         assertEquals("MEN", result.getCategoryName());
         assertEquals(false, result.getIsDelete());
-        assertEquals(4, this.categoryInfoRepository.count());
+        assertEquals(5, this.categoryInfoRepository.count());
     }
 
     @Test
@@ -58,8 +60,12 @@ public class CategoryManagerControllerTest {
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()
-            .expectBodyList(CategoryInfoDto.class).hasSize(2);
-
+            .expectBodyList(CategoryInfoDto.class).hasSize(2)
+            .returnResult()
+            .getResponseBody();
+        assertThat(result.stream()
+            .anyMatch(x -> List.of("Women", "Apparel", "Outer", "Pants")
+            .contains(x.getCategoryName())));
     }
 
 }
