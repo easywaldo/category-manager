@@ -61,6 +61,7 @@ public class CategoryInfo {
         this.categoryName = updateCommand.getCategoryName();
         this.isDelete = updateCommand.getIsDelete();
         this.parentSeq = updateCommand.getParentSeq();
+        this.categoryDepth = updateCommand.getCategoryDepth();
         return this;
     }
 }

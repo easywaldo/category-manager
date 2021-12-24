@@ -11,15 +11,18 @@ public class UpdateCategoryInfoCommand {
     private Integer parentSeq;
     private String categoryName;
     private Boolean isDelete;
+    private Integer categoryDepth;
 
     @Builder
     public UpdateCategoryInfoCommand(Integer categoryInfoSeq,
                                      Integer parentSeq,
                                      String categoryName,
-                                     Boolean isDelete) {
+                                     Boolean isDelete,
+                                     Integer categoryDepth) {
         this.categoryInfoSeq = categoryInfoSeq;
         this.parentSeq = parentSeq;
         this.categoryName = categoryName;
         this.isDelete = isDelete;
+        this.categoryDepth = categoryDepth;
     }
 }

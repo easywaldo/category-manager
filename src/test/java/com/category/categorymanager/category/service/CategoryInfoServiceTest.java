@@ -50,7 +50,7 @@ class CategoryInfoServiceTest {
     }
 
     @Test
-    public void 기존_카테고리_수정이_정상적으로_이뤄지는지_수정_커맨드를_통해_서비스를_호출하야_확인한다() {
+    public void 기존_카테고리_수정이_정상적으로_이뤄지는지_수정_커맨드를_통해_서비스를_호출하여_확인한다() {
 
         // arrange
         CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
@@ -63,9 +63,9 @@ class CategoryInfoServiceTest {
             .categoryInfoSeq(commandResult.getRegisteredCategoryInfoSeq())
             .isDelete(false)
             .parentSeq(0)
+            .categoryDepth(1)
             .categoryName("SHOES")
             .build();
-
 
         // act
         var updated = categoryInfoService.updateCategoryInfo(updateCommand);
@@ -74,6 +74,34 @@ class CategoryInfoServiceTest {
         var result = categoryInfoRepository.findById(commandResult.getRegisteredCategoryInfoSeq());
         assertEquals("SHOES", result.get().getCategoryName());;
         assertEquals("SHOES", updated.getCategoryName());
+    }
+
+    @Test
+    public void 기존_카테고리_뎁스가_3뎁스_보다_큰_경우_뎁스_수정이_이뤄지지_않는지를_수정_커맨드를_통해_서비스를_호출하여_확인한다() {
+
+        // arrange
+        CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
+            .categoryDepth(1)
+            .categoryName("BEAUTY")
+            .parentSeq(0)
+            .build();
+        var commandResult = categoryInfoService.createCategoryInfo(createCommand);
+        UpdateCategoryInfoCommand updateCommand = UpdateCategoryInfoCommand.builder()
+            .categoryInfoSeq(commandResult.getRegisteredCategoryInfoSeq())
+            .isDelete(false)
+            .parentSeq(0)
+            .categoryDepth(3)
+            .categoryName("FACE")
+            .build();
+
+        // act
+        var updated = categoryInfoService.updateCategoryInfo(updateCommand);
+
+        // assert
+        var result = categoryInfoRepository.findById(commandResult.getRegisteredCategoryInfoSeq());
+        assertEquals("FACE", result.get().getCategoryName());;
+        assertEquals("FACE", updated.getCategoryName());
+        assertEquals(1, result.get().getCategoryDepth());
     }
 
     @Test

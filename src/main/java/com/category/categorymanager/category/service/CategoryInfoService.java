@@ -52,8 +52,21 @@ public class CategoryInfoService {
 
     @Transactional
     public CategoryInfo updateCategoryInfo(UpdateCategoryInfoCommand updateCommand) {
+        if (!isExistsCategoryInfo(updateCommand.getCategoryInfoSeq())) {
+            throw new IllegalStateException("not exists category");
+        }
         var targetCategory = this.categoryInfoRepository.findById(
             updateCommand.getCategoryInfoSeq());
+
+        if (targetCategory.get().getCategoryDepth() < 3) {
+            UpdateCategoryInfoCommand replacedCommand = UpdateCategoryInfoCommand.builder()
+                .categoryDepth(targetCategory.get().getCategoryDepth())
+                .categoryName(updateCommand.getCategoryName())
+                .parentSeq(targetCategory.get().getParentSeq())
+                .build();
+            targetCategory.get().updateCategory(replacedCommand);
+            return targetCategory.get();
+        }
 
         return targetCategory.orElseThrow(() -> new IllegalStateException("not exists category"))
             .updateCategory(updateCommand);
