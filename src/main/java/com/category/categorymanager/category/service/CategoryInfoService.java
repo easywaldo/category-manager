@@ -99,4 +99,44 @@ public class CategoryInfoService {
             }
         }
     }
+
+    @Transactional
+    public void updateCategoryTreeInfo(UpdateCategoryInfoCommand updateCommand) {
+        if (!isExistsCategoryInfo(updateCommand.getCategoryInfoSeq())) {
+            throw new IllegalStateException("not exists category");
+        }
+
+        var targetCategory = this.categoryInfoRepository.findById(
+            updateCommand.getCategoryInfoSeq());
+
+        var depth = targetCategory.get().getCategoryDepth();
+        var updateDepth = updateCommand.getCategoryDepth();
+        var isUpDownDepth = updateDepth.compareTo(depth);
+
+        var childDepth2Category = categoryInfoRepository.findByParentSeqAndCategoryDepth(
+            updateCommand.getCategoryInfoSeq(), 2);
+        var childDepth3Category = categoryInfoRepository.findByParentSeqInAndCategoryDepth(
+            childDepth2Category.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()), 3);
+        if (!childDepth3Category.isEmpty() && isUpDownDepth > 0) {
+            throw new IllegalStateException("can't not be moved category depth");
+        }
+
+        if (!childDepth2Category.isEmpty()) {
+            childDepth2Category.forEach(x -> x.updateCategory(UpdateCategoryInfoCommand.builder()
+                .categoryName(x.getCategoryName())
+                .isDelete(false)
+                .categoryDepth(isUpDownDepth == 0 ? x.getCategoryDepth(): isUpDownDepth > 0 ? x.getCategoryDepth() + 1 : x.getCategoryDepth() -1)
+                .parentSeq(targetCategory.get().getCategoryInfoSeq())
+                .build()));
+        }
+        if (!childDepth3Category.isEmpty()) {
+            childDepth3Category.forEach(x -> x.updateCategory(UpdateCategoryInfoCommand.builder()
+                .categoryName(x.getCategoryName())
+                .isDelete(false)
+                .categoryDepth(isUpDownDepth == 0 ? x.getCategoryDepth(): isUpDownDepth > 0 ? x.getCategoryDepth() + 1 : x.getCategoryDepth() -1)
+                .parentSeq(targetCategory.get().getCategoryInfoSeq())
+                .build()));
+        }
+
+    }
 }

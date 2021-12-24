@@ -12,6 +12,7 @@ import org.springframework.test.context.event.annotation.BeforeTestExecution;
 
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
@@ -177,5 +178,53 @@ class CategoryInfoServiceTest {
         var notDeleteResult = this.categoryInfoRepository.findAllById(
             List.of(foo.getCategoryInfoSeq()));
         assertEquals(1, notDeleteResult.size());
+    }
+
+    @Test
+    public void 카테고리를_하향_이동하는_경우_서비스를_호출하여_확인한다() {
+        // arrange
+        var category1 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(1)
+                .categoryName("CATEGORY-1")
+                .parentSeq(0)
+                .build().toEntity());
+        var category1Child1 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(2)
+                .categoryName("CATEGORY-1-Child-1")
+                .parentSeq(category1.getCategoryInfoSeq())
+                .build().toEntity());
+        var category2 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(1)
+                .categoryName("CATEGORY-2")
+                .parentSeq(category1.getCategoryInfoSeq())
+                .build().toEntity());
+        var category21 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(2)
+                .categoryName("CATEGORY-2-1")
+                .parentSeq(category2.getCategoryInfoSeq())
+                .build().toEntity());
+
+        // act
+        this.categoryInfoService.updateCategoryTreeInfo(UpdateCategoryInfoCommand.builder()
+            .categoryInfoSeq(category1.getCategoryInfoSeq())
+            .parentSeq(category2.getCategoryInfoSeq())
+            .categoryDepth(2)
+            .build());
+
+        // assert
+        var result = categoryInfoRepository.findAll();
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1.getCategoryInfoSeq())).findFirst().get().getParentSeq().equals(category2.getCategoryInfoSeq()));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(2));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child1.getCategoryInfoSeq())).findFirst().get().getParentSeq().equals(category1.getCategoryInfoSeq()));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child1.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(3));
+
     }
 }
