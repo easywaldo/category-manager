@@ -59,21 +59,21 @@ public class CategoryManagerController {
     }
 
     @ApiOperation(value = "Update category")
-    @PutMapping("/category/updateCategory}")
+    @PutMapping("/category/updateCategory")
     public Mono<ResponseEntity<?>> updateCategory(@RequestBody UpdateCategoryInfoCommand updateCommand) {
         var result = this.categoryInfoService.updateCategoryInfo(updateCommand);
         return Mono.just(ResponseEntity.ok().body(result));
     }
 
     @ApiOperation(value = "Update category", notes = "트리구조로 카테고리를 변경하는 경우 사용한다.")
-    @PutMapping("/category/updateCategoryTree}")
+    @PutMapping("/category/updateCategoryTree")
     public Mono<ResponseEntity<?>> updateCategoryTree(@RequestBody UpdateCategoryInfoCommand updateCommand) {
         this.categoryInfoService.updateCategoryTreeInfo(updateCommand);
         return Mono.just(ResponseEntity.ok().body(true));
     }
 
     @ApiOperation(value = "Delete category")
-    @DeleteMapping("/category/deleteCategory}")
+    @DeleteMapping("/category/deleteCategory")
     public Mono<ResponseEntity<?>> deleteCategory(@RequestBody DeleteCategoryInfoCommand deleteCommand) {
         this.categoryInfoService.deleteCategoryInfo(deleteCommand);
         return Mono.just(ResponseEntity.ok().body(true));
