@@ -29,7 +29,7 @@ public class CreateCategoryInfoCommand implements RequestValidator {
     }
     @Min(value = 0)
     private Integer parentSeq;
-    @Min(value = 1)
+
     private Integer categoryInfoSeq;
 
     @Builder
@@ -47,7 +47,6 @@ public class CreateCategoryInfoCommand implements RequestValidator {
 
     public CategoryInfo toEntity() {
         return CategoryInfo.builder()
-            .categoryInfoSeq(this.categoryInfoSeq)
             .categoryName(this.categoryName)
             .categoryDepth(this.categoryDepth)
             .isDelete(false)

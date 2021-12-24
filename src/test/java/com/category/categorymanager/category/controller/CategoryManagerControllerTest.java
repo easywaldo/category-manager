@@ -1,6 +1,8 @@
 package com.category.categorymanager.category.controller;
 
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
+import com.category.categorymanager.category.controller.response.CategoryInfoValidationEnum;
+import com.category.categorymanager.category.controller.response.CreateCategoryInfoResponse;
 import com.category.categorymanager.category.dto.CategoryInfoDto;
 import com.category.categorymanager.category.repository.CategoryInfoRepository;
 import org.junit.jupiter.api.Test;
@@ -38,11 +40,10 @@ public class CategoryManagerControllerTest {
             .bodyValue(createCommand)
             .exchange()
             .expectStatus().isCreated()
-            .expectBody(CreateCategoryInfoCommand.class)
-            .value(category -> {
-                assertThat(category.getCategoryName()).isNotNull();
-                assertThat(category.getCategoryInfoSeq()).isEqualTo(5);
-                assertThat(category.getIsDelete()).isEqualTo(false);
+            .expectBody(CreateCategoryInfoResponse.class)
+            .value(commandResult -> {
+                assertThat(commandResult.getCategoryInfoValidationEnum().equals(CategoryInfoValidationEnum.REGISTERED));
+                assertThat(commandResult.getRegisteredCategoryInfoSeq() > 0);
             });
 
         // assert

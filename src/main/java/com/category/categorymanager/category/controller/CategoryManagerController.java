@@ -7,9 +7,7 @@ import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
 import com.category.categorymanager.category.service.CategoryInfoService;
 import com.category.categorymanager.config.validator.CustomValidator;
 import com.category.categorymanager.querygenerator.CategoryQueryGenerator;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -44,14 +42,16 @@ public class CategoryManagerController {
         if (errors.hasErrors()) {
             return Mono.just(ResponseEntity.badRequest().body(errors.getAllErrors()));
         }
-        var categorySeq = categoryInfoService.createCategoryInfo(createCommand);
-        createCommand.setCategoryInfoSeq(categorySeq);
+        var commandResult = categoryInfoService.createCategoryInfo(createCommand);
         return Mono.just(ResponseEntity.created(
-            URI.create(String.format("/category/%s", categorySeq)))
-            .body(createCommand));
+            URI.create(String.format("/category/%s", commandResult.getRegisteredCategoryInfoSeq())))
+            .body(commandResult));
     }
 
-    @ApiOperation(value = "Get category", notes = "categoryInfoSeq 필수값이 아니도록 설정이 되어 있으며 swagger ui 상으로는 입력을 해야 한다.")
+    @ApiOperation(value = "Get category",
+        notes = "categoryInfoSeq 필수값이 아니도록 설정이 되어 있으며 swagger ui 상으로는 입력을 해야 한다." +
+            "윈도우즈의 경우 명령창에서 curl -XGET localhost:8089/category/1 와 같이 호출을 하여 정상적인 이용이 가능하다." +
+            "/category 주소의 경우 swagger-ui 상으로는 파라미터를 입력하여도 Empty 로 값이 전달이 된다.")
     @GetMapping(value = {"/category", "/category/{categoryInfoSeq}"})
     public Mono<ResponseEntity<?>> selectCategory(@PathVariable(required = false, name = "categoryInfoSeq") Optional<Integer> categoryInfoSeq) {
         var result = this.categoryQueryGenerator.selectCategoryInfo(categoryInfoSeq.orElse(0));

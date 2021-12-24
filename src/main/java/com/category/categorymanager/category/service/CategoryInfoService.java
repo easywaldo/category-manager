@@ -3,6 +3,8 @@ package com.category.categorymanager.category.service;
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
 import com.category.categorymanager.category.command.DeleteCategoryInfoCommand;
 import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
+import com.category.categorymanager.category.controller.response.CategoryInfoValidationEnum;
+import com.category.categorymanager.category.controller.response.CreateCategoryInfoResponse;
 import com.category.categorymanager.category.entity.CategoryInfo;
 import com.category.categorymanager.category.repository.CategoryInfoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,23 @@ public class CategoryInfoService {
         this.categoryInfoRepository = categoryInfoRepository;
     }
 
+    private boolean isExistsCategoryInfo(Integer categoryInfoSeq) {
+        return this.categoryInfoRepository.findById(categoryInfoSeq).isPresent();
+    }
+
     @Transactional
-    public Integer createCategoryInfo(CreateCategoryInfoCommand createCommand) {
-        return this.categoryInfoRepository.save(createCommand.toEntity()).getCategoryInfoSeq();
+    public CreateCategoryInfoResponse createCategoryInfo(CreateCategoryInfoCommand createCommand) {
+        if(createCommand.getCategoryDepth() > 1 && !isExistsCategoryInfo(createCommand.getParentSeq())) {
+            return CreateCategoryInfoResponse.builder()
+                .categoryInfoValidationEnum(CategoryInfoValidationEnum.CATEGORY_IS_NOT_EXISTS)
+                .build();
+        }
+
+        var registeredCategoryInfoSeq = this.categoryInfoRepository.save(createCommand.toEntity()).getCategoryInfoSeq();
+        return CreateCategoryInfoResponse.builder()
+            .registeredCategoryInfoSeq(registeredCategoryInfoSeq)
+            .categoryInfoValidationEnum(CategoryInfoValidationEnum.REGISTERED)
+            .build();
     }
 
     @Transactional

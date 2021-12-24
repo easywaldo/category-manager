@@ -34,9 +34,10 @@ class CategoryInfoServiceTest {
 
         // arrange
         CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
-            .categoryDepth(0)
+            .categoryDepth(1)
             .categoryName("MEN")
             .parentSeq(0)
+            .isDelete(false)
             .build();
 
         // act
@@ -53,13 +54,13 @@ class CategoryInfoServiceTest {
 
         // arrange
         CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
-            .categoryDepth(0)
+            .categoryDepth(1)
             .categoryName("MEN")
             .parentSeq(0)
             .build();
-        var categoryInfoSeq = categoryInfoService.createCategoryInfo(createCommand);
+        var commandResult = categoryInfoService.createCategoryInfo(createCommand);
         UpdateCategoryInfoCommand updateCommand = UpdateCategoryInfoCommand.builder()
-            .categoryInfoSeq(categoryInfoSeq)
+            .categoryInfoSeq(commandResult.getRegisteredCategoryInfoSeq())
             .isDelete(false)
             .parentSeq(0)
             .categoryName("SHOES")
@@ -70,7 +71,7 @@ class CategoryInfoServiceTest {
         var updated = categoryInfoService.updateCategoryInfo(updateCommand);
 
         // assert
-        var result = categoryInfoRepository.findById(categoryInfoSeq);
+        var result = categoryInfoRepository.findById(commandResult.getRegisteredCategoryInfoSeq());
         assertEquals("SHOES", result.get().getCategoryName());;
         assertEquals("SHOES", updated.getCategoryName());
     }
@@ -82,7 +83,7 @@ class CategoryInfoServiceTest {
         var bulkInsertCommand = List.of(
             CreateCategoryInfoCommand.builder()
                 .categoryInfoSeq(1)
-                .categoryDepth(0)
+                .categoryDepth(1)
                 .categoryName("MEN")
                 .parentSeq(0)
                 .build(),
