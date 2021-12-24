@@ -227,4 +227,51 @@ class CategoryInfoServiceTest {
             category1Child1.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(3));
 
     }
+
+    @Test
+    public void 카테고리를_상향_이동하는_경우_서비스를_호출하여_확인한다() {
+        // arrange
+        var category1 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(1)
+                .categoryName("CATEGORY-1")
+                .parentSeq(0)
+                .build().toEntity());
+        var category1Child1 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(2)
+                .categoryName("CATEGORY-1-Child-1")
+                .parentSeq(category1.getCategoryInfoSeq())
+                .build().toEntity());
+        var category1Child11 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(3)
+                .categoryName("CATEGORY-1-Child-1-1")
+                .parentSeq(category1Child1.getCategoryInfoSeq())
+                .build().toEntity());
+        var category2 = this.categoryInfoRepository.save(
+            CreateCategoryInfoCommand.builder()
+                .categoryDepth(1)
+                .categoryName("CATEGORY-2-1")
+                .parentSeq(0)
+                .build().toEntity());
+
+        // act
+        this.categoryInfoService.updateCategoryTreeInfo(UpdateCategoryInfoCommand.builder()
+            .categoryInfoSeq(category1Child1.getCategoryInfoSeq())
+            .parentSeq(0)
+            .categoryDepth(1)
+            .build());
+
+        // assert
+        var result = categoryInfoRepository.findAll();
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child1.getCategoryInfoSeq())).findFirst().get().getParentSeq().equals(0));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child1.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(1));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child11.getCategoryInfoSeq())).findFirst().get().getParentSeq().equals(category1Child1.getCategoryInfoSeq()));
+        assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
+            category1Child11.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(2));
+    }
 }
