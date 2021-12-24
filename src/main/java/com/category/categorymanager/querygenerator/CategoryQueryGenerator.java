@@ -77,17 +77,24 @@ public class CategoryQueryGenerator {
         QCategoryInfo categoryInfoDepth3 = new QCategoryInfo("qci3");
 
         BooleanBuilder whereClause = new BooleanBuilder();
+        whereClause.and(categoryInfo.isDelete.eq(false));
+        whereClause.and(categoryInfoDepth2.isDelete.eq(false));
+        whereClause.and(categoryInfoDepth3.isDelete.eq(false));
+
+        BooleanBuilder likeClause = new BooleanBuilder();
         if (!Strings.isNullOrEmpty(command.getCategoryName())) {
-            whereClause.or(categoryInfo.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
-            whereClause.or(categoryInfoDepth2.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
-            whereClause.or(categoryInfoDepth3.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
+            likeClause.or(categoryInfo.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
+            likeClause.or(categoryInfoDepth2.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
+            likeClause.or(categoryInfoDepth3.categoryName.toLowerCase().like("%" + command.getCategoryName().toLowerCase() + "%"));
         }
 
         if (command.getCategoryParentSeq() > 0) {
-            whereClause.or(categoryInfo.parentSeq.eq(command.getCategoryParentSeq()));
-            whereClause.or(categoryInfoDepth2.parentSeq.eq(command.getCategoryParentSeq()));
-            whereClause.or(categoryInfoDepth3.parentSeq.eq(command.getCategoryParentSeq()));
+            likeClause.or(categoryInfo.parentSeq.eq(command.getCategoryParentSeq()));
+            likeClause.or(categoryInfoDepth2.parentSeq.eq(command.getCategoryParentSeq()));
+            likeClause.or(categoryInfoDepth3.parentSeq.eq(command.getCategoryParentSeq()));
         }
+        whereClause.and(likeClause);
+
 
         return this.jpaQueryFactory.from(categoryInfo)
             .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))

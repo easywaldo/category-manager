@@ -63,6 +63,7 @@ public class CategoryInfoService {
                 .categoryDepth(targetCategory.get().getCategoryDepth())
                 .categoryName(updateCommand.getCategoryName())
                 .parentSeq(targetCategory.get().getParentSeq())
+                .categoryDepth(targetCategory.get().getCategoryDepth())
                 .build();
             targetCategory.get().updateCategory(replacedCommand);
             return targetCategory.get();
