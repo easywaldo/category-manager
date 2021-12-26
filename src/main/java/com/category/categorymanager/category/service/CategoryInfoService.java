@@ -44,6 +44,13 @@ public class CategoryInfoService {
 
     @Transactional
     public void bulkInsertCategoryInfo(List<CreateCategoryInfoCommand> bulkCommand) {
+        var keySetSize =bulkCommand.stream().collect(
+            Collectors.groupingBy(CreateCategoryInfoCommand::getCategoryName)).keySet().size();
+
+        if (keySetSize != bulkCommand.size()) {
+            throw new IllegalArgumentException("category name is not allowed same name");
+        }
+
         var depth1List = bulkCommand.stream().filter(x ->
             x.getCategoryDepth().equals(1)).collect(Collectors.toList());
         var depth2List = bulkCommand.stream().filter(x ->

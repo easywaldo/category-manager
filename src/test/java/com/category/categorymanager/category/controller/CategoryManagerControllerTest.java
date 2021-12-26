@@ -102,4 +102,37 @@ public class CategoryManagerControllerTest {
             .contains(x.getCategoryName())));
     }
 
+    @Test
+    public void 카테고리_벌크_등록_시_중복된_이름이_존재하는_경우_예외처리를_리턴하는_테스트() {
+        // assert
+        var result = this.webTestClient.post()
+            .uri("/category/bulkInsert")
+            .bodyValue(List.of(
+                CreateCategoryInfoCommand.builder()
+                    .categoryName("Category Name")
+                    .isDelete(false)
+                    .parentSeq(0)
+                    .categoryDepth(1)
+                    .categoryInfoSeq(1)
+                    .build(),
+                CreateCategoryInfoCommand.builder()
+                    .categoryName("Category Name")
+                    .isDelete(false)
+                    .parentSeq(0)
+                    .categoryDepth(1)
+                    .categoryInfoSeq(2)
+                    .build(),
+                CreateCategoryInfoCommand.builder()
+                    .categoryName("Category Name")
+                    .isDelete(false)
+                    .parentSeq(0)
+                    .categoryDepth(1)
+                    .categoryInfoSeq(3)
+                    .build()
+            ))
+            .accept(MediaType.APPLICATION_JSON)
+            .exchange()
+            .expectStatus().is5xxServerError();
+    }
+
 }
