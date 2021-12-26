@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -84,6 +85,13 @@ public class CategoryManagerController {
     public Mono<ResponseEntity<?>> selectCategory(@RequestBody QueryCategoryInfoCommand queryCommand) {
         var result = this.categoryQueryGenerator.queryCategoryInfoList(queryCommand);
         return Mono.just(ResponseEntity.ok().body(result));
+    }
+
+    @ApiOperation(value = "BulkInsert category")
+    @PostMapping("/category/bulkInsert")
+    public Mono<ResponseEntity<?>> bulkInsert(@RequestBody List<CreateCategoryInfoCommand> bulkCommand) {
+        this.categoryInfoService.bulkInsertCategoryInfo(bulkCommand);
+        return Mono.just(ResponseEntity.ok().body(true));
     }
 
 

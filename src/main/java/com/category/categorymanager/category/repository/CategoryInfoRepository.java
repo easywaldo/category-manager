@@ -8,4 +8,5 @@ import java.util.List;
 public interface CategoryInfoRepository extends JpaRepository<CategoryInfo, Integer> {
     List<CategoryInfo> findByParentSeqAndCategoryDepth(Integer parentSeq, Integer categoryDepth);
     List<CategoryInfo> findByParentSeqInAndCategoryDepth(List<Integer> parentSeqList, Integer categoryDepth);
+    CategoryInfo findByCategoryName(String categoryName);
 }

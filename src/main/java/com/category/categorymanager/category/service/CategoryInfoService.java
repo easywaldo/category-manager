@@ -44,10 +44,31 @@ public class CategoryInfoService {
 
     @Transactional
     public void bulkInsertCategoryInfo(List<CreateCategoryInfoCommand> bulkCommand) {
-        this.categoryInfoRepository.saveAll(
-            bulkCommand.stream().map(
-                CreateCategoryInfoCommand::toEntity).collect(Collectors.toList())
-        );
+        var depth1List = bulkCommand.stream().filter(x ->
+            x.getCategoryDepth().equals(1)).collect(Collectors.toList());
+        var depth2List = bulkCommand.stream().filter(x ->
+            x.getCategoryDepth().equals(2)).collect(Collectors.toList());
+        var depth3List = bulkCommand.stream().filter(x ->
+            x.getCategoryDepth().equals(3)).collect(Collectors.toList());
+
+        this.categoryInfoRepository.saveAll(depth1List.stream().map(
+            CreateCategoryInfoCommand::toEntity).collect(Collectors.toList()));
+        depth2List.forEach(x -> {
+            var parentCategoryName = depth1List.stream().filter(o ->
+                o.getCategoryInfoSeq().equals(x.getParentSeq())).collect(Collectors.toList()).get(0).getCategoryName();
+            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).getCategoryInfoSeq();
+            x.setParentSeq(parentCategorySeq);
+        });
+        this.categoryInfoRepository.saveAll(depth2List.stream().map(
+            CreateCategoryInfoCommand::toEntity).collect(Collectors.toList()));
+        depth3List.forEach(x -> {
+            var parentCategoryName = depth2List.stream().filter(o ->
+                o.getCategoryInfoSeq().equals(x.getParentSeq())).collect(Collectors.toList()).get(0).getCategoryName();
+            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).getCategoryInfoSeq();
+            x.setParentSeq(parentCategorySeq);
+        });
+        this.categoryInfoRepository.saveAll(depth3List.stream().map(
+            CreateCategoryInfoCommand::toEntity).collect(Collectors.toList()));
     }
 
     @Transactional
