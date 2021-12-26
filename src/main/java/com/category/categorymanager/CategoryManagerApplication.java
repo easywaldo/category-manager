@@ -21,33 +21,41 @@ public class CategoryManagerApplication {
         return (args) -> {
             categoryInfoRepository.deleteAll();
             categoryInfoRepository.save(CategoryInfo.builder()
+                .categoryDepth(1)
                 .parentSeq(0)
                 .categoryInfoSeq(1)
-                .categoryDepth(1)
                 .categoryName("Women")
                 .isDelete(false)
                 .build());
             categoryInfoRepository.save(CategoryInfo.builder()
+                .categoryDepth(2)
                 .parentSeq(1)
                 .categoryInfoSeq(2)
-                .categoryDepth(2)
                 .categoryName("Apparel")
                 .isDelete(false)
                 .build());
             categoryInfoRepository.save(CategoryInfo.builder()
+                .categoryDepth(3)
                 .parentSeq(2)
                 .categoryInfoSeq(3)
-                .categoryDepth(3)
                 .categoryName("Outer")
                 .isDelete(false)
                 .build());
             categoryInfoRepository.save(CategoryInfo.builder()
+                .categoryDepth(3)
                 .parentSeq(2)
                 .categoryInfoSeq(4)
-                .categoryDepth(3)
                 .categoryName("Pants")
                 .isDelete(false)
                 .build());
+            categoryInfoRepository.save(CategoryInfo.builder()
+                .categoryDepth(1)
+                .parentSeq(0)
+                .categoryInfoSeq(5)
+                .categoryName("Men")
+                .isDelete(false)
+                .build());
+
         };
     }
 

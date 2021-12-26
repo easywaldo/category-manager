@@ -56,14 +56,15 @@ class CategoryQueryGeneratorTest {
         // arrange
         QueryCategoryInfoCommand command = QueryCategoryInfoCommand.builder()
             .build();
+        var expectedCategoryList = List.of("Women", "Apparel", "Outer");
 
         // act
         var result = queryGenerator.queryCategoryInfoList(command);
 
         // assert
         assertNotNull(result);
-        assertEquals(3, result.size());
-        assertEquals(List.of("Women", "Apparel", "Outer"),
+        assertEquals(expectedCategoryList.size(), result.size());
+        assertEquals(expectedCategoryList,
             result.stream().map(CategoryInfoDto::getCategoryName).collect(Collectors.toList()));
     }
 

@@ -58,7 +58,7 @@ public class CategoryInfoService {
         var targetCategory = this.categoryInfoRepository.findById(
             updateCommand.getCategoryInfoSeq());
 
-        if (targetCategory.get().getCategoryDepth() < 3) {
+        if (targetCategory.get().getParentSeq().equals(updateCommand.getParentSeq())) {
             UpdateCategoryInfoCommand replacedCommand = UpdateCategoryInfoCommand.builder()
                 .categoryDepth(targetCategory.get().getCategoryDepth())
                 .categoryName(updateCommand.getCategoryName())
@@ -66,11 +66,12 @@ public class CategoryInfoService {
                 .categoryDepth(targetCategory.get().getCategoryDepth())
                 .build();
             targetCategory.get().updateCategory(replacedCommand);
-            return targetCategory.get();
+            return categoryInfoRepository.findById(updateCommand.getCategoryInfoSeq()).get();
         }
-
-        return targetCategory.orElseThrow(() -> new IllegalStateException("not exists category"))
-            .updateCategory(updateCommand);
+        else {
+            updateCategoryTreeInfo(updateCommand);
+            return categoryInfoRepository.findById(updateCommand.getCategoryInfoSeq()).get();
+        }
     }
 
     @Transactional
@@ -110,16 +111,19 @@ public class CategoryInfoService {
         var targetCategory = this.categoryInfoRepository.findById(
             updateCommand.getCategoryInfoSeq());
 
-        var depth = targetCategory.get().getCategoryDepth();
-        var updateDepth = updateCommand.getCategoryDepth();
-        var isUpDownDepth = updateDepth.compareTo(depth);
+        var currentDepth = targetCategory.get().getCategoryDepth();
+        var updateCommandDepth = updateCommand.getCategoryDepth();
+        var isUpDownDepth = updateCommandDepth.compareTo(currentDepth);
 
         var childDepth2Category = categoryInfoRepository.findByParentSeqAndCategoryDepth(
             updateCommand.getCategoryInfoSeq(), 2);
         var childDepth3Category = categoryInfoRepository.findByParentSeqInAndCategoryDepth(
             childDepth2Category.stream().map(CategoryInfo::getCategoryInfoSeq).collect(Collectors.toList()), 3);
         if (!childDepth3Category.isEmpty() && isUpDownDepth > 0) {
-            throw new IllegalStateException("can't not be moved category depth");
+            throw new IllegalStateException("can't not be moved lower category depth");
+        }
+        if (currentDepth.equals(2)) {
+            childDepth3Category = categoryInfoRepository.findByParentSeqAndCategoryDepth(targetCategory.get().getCategoryInfoSeq(), 3);
         }
 
         if (!childDepth2Category.isEmpty()) {
@@ -138,6 +142,14 @@ public class CategoryInfoService {
                 .parentSeq(targetCategory.get().getCategoryInfoSeq())
                 .build()));
         }
+
+        targetCategory.get().updateCategory(UpdateCategoryInfoCommand.builder()
+            .categoryInfoSeq(targetCategory.get().getCategoryInfoSeq())
+            .parentSeq(updateCommand.getParentSeq())
+            .isDelete(updateCommand.getIsDelete())
+            .categoryDepth(updateCommandDepth)
+            .categoryName(updateCommand.getCategoryName())
+            .build());
 
     }
 }

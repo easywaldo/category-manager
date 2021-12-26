@@ -4,7 +4,9 @@ import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
 import com.category.categorymanager.category.controller.response.CategoryInfoValidationEnum;
 import com.category.categorymanager.category.controller.response.CreateCategoryInfoResponse;
 import com.category.categorymanager.category.dto.CategoryInfoDto;
+import com.category.categorymanager.category.entity.CategoryInfo;
 import com.category.categorymanager.category.repository.CategoryInfoRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +26,35 @@ public class CategoryManagerControllerTest {
 
     @Autowired
     CategoryInfoRepository categoryInfoRepository;
+
+    @BeforeEach
+    public void setUp() {
+        categoryInfoRepository.deleteAll();
+        categoryInfoRepository.save(CategoryInfo.builder()
+            .parentSeq(0)
+            .categoryDepth(1)
+            .categoryName("Women")
+            .isDelete(false)
+            .build());
+        categoryInfoRepository.save(CategoryInfo.builder()
+            .parentSeq(categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("Women")).findFirst().get().getCategoryInfoSeq())
+            .categoryDepth(2)
+            .categoryName("Apparel")
+            .isDelete(false)
+            .build());
+        categoryInfoRepository.save(CategoryInfo.builder()
+            .parentSeq(categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("Apparel")).findFirst().get().getCategoryInfoSeq())
+            .categoryDepth(3)
+            .categoryName("Outer")
+            .isDelete(false)
+            .build());
+        categoryInfoRepository.save(CategoryInfo.builder()
+            .parentSeq(categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("Apparel")).findFirst().get().getCategoryInfoSeq())
+            .categoryDepth(3)
+            .categoryName("Pants")
+            .isDelete(false)
+            .build());
+    }
 
     @Test
     public void 신규_카테고리_등록_통합_테스트() {
@@ -47,17 +78,19 @@ public class CategoryManagerControllerTest {
             });
 
         // assert
-        var result = this.categoryInfoRepository.findById(5).get();
-        assertEquals("MEN", result.getCategoryName());
-        assertEquals(false, result.getIsDelete());
-        assertEquals(5, this.categoryInfoRepository.count());
+        var result = this.categoryInfoRepository.findAll();
+        assertEquals(1, result.stream().filter(x -> x.getCategoryName().equals("MEN")).count());
+        assertEquals(false, result.stream().filter(x -> x.getCategoryName().equals("MEN")).findFirst().get().getIsDelete());
     }
 
     @Test
     public void 카테고리_조회_통합_테스트() {
-
         // assert
-        var result = this.webTestClient.get().uri(String.format("/category/%s", 1))
+        var result = this.webTestClient.get()
+            .uri(String.format("/category/%s",
+                this.categoryInfoRepository.findAll()
+                    .stream()
+                    .filter(x -> x.getCategoryName().equals("Women")).findFirst().get().getCategoryInfoSeq()))
             .accept(MediaType.APPLICATION_JSON)
             .exchange()
             .expectStatus().isOk()

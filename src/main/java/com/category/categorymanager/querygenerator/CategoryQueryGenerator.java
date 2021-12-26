@@ -95,6 +95,9 @@ public class CategoryQueryGenerator {
         }
         whereClause.and(likeClause);
 
+        if (Strings.isNullOrEmpty(command.getCategoryName()) && command.getCategoryParentSeq().equals(0)) {
+            whereClause = new BooleanBuilder();
+        }
 
         return this.jpaQueryFactory.from(categoryInfo)
             .leftJoin(categoryInfoDepth2).on(categoryInfoDepth2.parentSeq.eq(categoryInfo.categoryInfoSeq))
