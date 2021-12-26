@@ -35,6 +35,13 @@ public class CategoryInfoService {
                 .build();
         }
 
+        var categoryInfo = this.categoryInfoRepository.findByCategoryName(createCommand.getCategoryName());
+        if (!categoryInfo.getIsDelete()) {
+            return CreateCategoryInfoResponse.builder()
+                .categoryInfoValidationEnum(CategoryInfoValidationEnum.CATEGORY_NAME_IS_DUPLICATED)
+                .build();
+        }
+
         var registeredCategoryInfoSeq = this.categoryInfoRepository.save(createCommand.toEntity()).getCategoryInfoSeq();
         return CreateCategoryInfoResponse.builder()
             .registeredCategoryInfoSeq(registeredCategoryInfoSeq)
