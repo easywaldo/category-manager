@@ -4,9 +4,10 @@ import com.category.categorymanager.category.entity.CategoryInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CategoryInfoRepository extends JpaRepository<CategoryInfo, Integer> {
     List<CategoryInfo> findByParentSeqAndCategoryDepth(Integer parentSeq, Integer categoryDepth);
     List<CategoryInfo> findByParentSeqInAndCategoryDepth(List<Integer> parentSeqList, Integer categoryDepth);
-    CategoryInfo findByCategoryName(String categoryName);
+    Optional<CategoryInfo> findByCategoryName(String categoryName);
 }

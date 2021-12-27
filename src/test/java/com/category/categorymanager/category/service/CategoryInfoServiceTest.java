@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 class CategoryInfoServiceTest {
@@ -273,5 +274,61 @@ class CategoryInfoServiceTest {
             category1Child11.getCategoryInfoSeq())).findFirst().get().getParentSeq().equals(category1Child1.getCategoryInfoSeq()));
         assertThat(result.stream().filter(x -> x.getCategoryInfoSeq().equals(
             category1Child11.getCategoryInfoSeq())).findFirst().get().getCategoryDepth().equals(2));
+    }
+
+    @Test
+    public void 카테고리_이동_시_수정_명령의_카테고리_부모값이_3뎁스인경우_수정이_되지_않는지_확인한다() {
+        // arrange
+        var bulkInsertCommand = List.of(
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(1)
+                .categoryDepth(1)
+                .categoryName("MEN")
+                .parentSeq(0)
+                .isDelete(false)
+                .build(),
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(2)
+                .categoryDepth(2)
+                .categoryName("OUTER")
+                .parentSeq(1)
+                .isDelete(false)
+                .build(),
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(3)
+                .categoryDepth(3)
+                .categoryName("COAT")
+                .parentSeq(2)
+                .isDelete(false)
+                .build(),
+            CreateCategoryInfoCommand.builder()
+                .categoryInfoSeq(4)
+                .categoryDepth(3)
+                .categoryName("PADDING")
+                .parentSeq(2)
+                .isDelete(false)
+                .build());
+
+        this.categoryInfoService.bulkInsertCategoryInfo(bulkInsertCommand);
+        this.categoryInfoService.createCategoryInfo(CreateCategoryInfoCommand.builder()
+            .categoryInfoSeq(5)
+            .categoryName("NEW")
+            .parentSeq(0)
+            .isDelete(false)
+            .categoryDepth(1)
+            .build());
+
+        // assert
+        var assertTarget = this.categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("NEW")).findFirst().get();
+        var parentTarget = this.categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("PADDING")).findFirst().get();
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> this.categoryInfoService.updateCategoryInfo(UpdateCategoryInfoCommand.builder()
+            .categoryDepth(3)
+            .parentSeq(parentTarget.getCategoryInfoSeq())
+            .categoryName("MOVED-COAT")
+            .categoryInfoSeq(assertTarget.getCategoryInfoSeq())
+            .isDelete(false)
+            .build()));
+        assertEquals("cat not be moved category", exception.getMessage());
+
     }
 }

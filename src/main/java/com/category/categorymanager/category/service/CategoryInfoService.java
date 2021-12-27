@@ -36,7 +36,7 @@ public class CategoryInfoService {
         }
 
         var categoryInfo = this.categoryInfoRepository.findByCategoryName(createCommand.getCategoryName());
-        if (!categoryInfo.getIsDelete()) {
+        if (categoryInfo.isPresent() && !categoryInfo.get().getIsDelete()) {
             return CreateCategoryInfoResponse.builder()
                 .categoryInfoValidationEnum(CategoryInfoValidationEnum.CATEGORY_NAME_IS_DUPLICATED)
                 .build();
@@ -70,7 +70,7 @@ public class CategoryInfoService {
         depth2List.forEach(x -> {
             var parentCategoryName = depth1List.stream().filter(o ->
                 o.getCategoryInfoSeq().equals(x.getParentSeq())).collect(Collectors.toList()).get(0).getCategoryName();
-            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).getCategoryInfoSeq();
+            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).get().getCategoryInfoSeq();
             x.setParentSeq(parentCategorySeq);
         });
         this.categoryInfoRepository.saveAll(depth2List.stream().map(
@@ -78,7 +78,7 @@ public class CategoryInfoService {
         depth3List.forEach(x -> {
             var parentCategoryName = depth2List.stream().filter(o ->
                 o.getCategoryInfoSeq().equals(x.getParentSeq())).collect(Collectors.toList()).get(0).getCategoryName();
-            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).getCategoryInfoSeq();
+            var parentCategorySeq = this.categoryInfoRepository.findByCategoryName(parentCategoryName).get().getCategoryInfoSeq();
             x.setParentSeq(parentCategorySeq);
         });
         this.categoryInfoRepository.saveAll(depth3List.stream().map(
@@ -92,6 +92,11 @@ public class CategoryInfoService {
         }
         var targetCategory = this.categoryInfoRepository.findById(
             updateCommand.getCategoryInfoSeq());
+
+        var parentTarget = this.categoryInfoRepository.findById(updateCommand.getParentSeq());
+        if (parentTarget.isPresent() && parentTarget.get().getCategoryDepth().equals(3)) {
+            throw new IllegalStateException("cat not be moved category");
+        }
 
         if (targetCategory.get().getParentSeq().equals(updateCommand.getParentSeq())) {
             UpdateCategoryInfoCommand replacedCommand = UpdateCategoryInfoCommand.builder()
