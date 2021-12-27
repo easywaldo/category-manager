@@ -331,4 +331,28 @@ class CategoryInfoServiceTest {
         assertEquals("cat not be moved category", exception.getMessage());
 
     }
+
+    @Test
+    public void 카테고리_이동_시_수정_명령의_카테고리_부모가_존재하지_않는_경우_수정_되지_않는지_확인한다() {
+        // arrange
+        this.categoryInfoService.createCategoryInfo(CreateCategoryInfoCommand.builder()
+            .categoryInfoSeq(10)
+            .categoryName("UNKNOWN")
+            .parentSeq(0)
+            .isDelete(false)
+            .categoryDepth(1)
+            .build());
+
+        // assert
+        var assertTarget = this.categoryInfoRepository.findAll().stream().filter(x -> x.getCategoryName().equals("UNKNOWN")).findFirst().get();
+        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> this.categoryInfoService.updateCategoryInfo(UpdateCategoryInfoCommand.builder()
+            .categoryDepth(3)
+            .parentSeq(99999)
+            .categoryName("UNKNOWN-MOVED")
+            .categoryInfoSeq(assertTarget.getCategoryInfoSeq())
+            .isDelete(false)
+            .build()));
+        assertEquals("parent category is not exists", exception.getMessage());
+
+    }
 }

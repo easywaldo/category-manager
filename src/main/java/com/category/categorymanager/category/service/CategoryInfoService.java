@@ -98,6 +98,10 @@ public class CategoryInfoService {
             throw new IllegalStateException("cat not be moved category");
         }
 
+        if (parentTarget.isEmpty() && updateCommand.getParentSeq() > 0) {
+            throw new IllegalStateException("parent category is not exists");
+        }
+
         if (targetCategory.get().getParentSeq().equals(updateCommand.getParentSeq())) {
             UpdateCategoryInfoCommand replacedCommand = UpdateCategoryInfoCommand.builder()
                 .categoryDepth(targetCategory.get().getCategoryDepth())
