@@ -3,18 +3,24 @@ package com.category.categorymanager.category.service;
 import com.category.categorymanager.category.command.CreateCategoryInfoCommand;
 import com.category.categorymanager.category.command.DeleteCategoryInfoCommand;
 import com.category.categorymanager.category.command.UpdateCategoryInfoCommand;
+import com.category.categorymanager.category.controller.response.CategoryInfoValidationEnum;
+import com.category.categorymanager.category.entity.CategoryInfo;
 import com.category.categorymanager.category.repository.CategoryInfoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.event.annotation.BeforeTestExecution;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 class CategoryInfoServiceTest {
@@ -22,8 +28,14 @@ class CategoryInfoServiceTest {
     @Autowired
     public CategoryInfoService categoryInfoService;
 
+    @InjectMocks
+    public CategoryInfoService injectMockCategoryInfoService;
+
     @Autowired
     public CategoryInfoRepository categoryInfoRepository;
+
+    @Mock
+    public CategoryInfoRepository categoryInfoMockRepository;
 
     @BeforeTestExecution
     @BeforeEach
@@ -354,5 +366,45 @@ class CategoryInfoServiceTest {
             .build()));
         assertEquals("parent category is not exists", exception.getMessage());
 
+    }
+
+    @Test
+    public void 부모카테고리가_존재하지_않는_경우에_대한_신규_카테고리_등록_시_올바른_리턴값을_확인한다() {
+        // arrange
+        CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
+            .categoryInfoSeq(10)
+            .parentSeq(99)
+            .categoryDepth(2)
+            .categoryName("부모없는 자식카테고리")
+            .build();
+
+        when(categoryInfoMockRepository.findById(1)).thenReturn(Optional.empty());
+
+        // act
+        var result = injectMockCategoryInfoService.createCategoryInfo(createCommand);
+
+        // assert
+        assertEquals(CategoryInfoValidationEnum.CATEGORY_IS_NOT_EXISTS, result.getCategoryInfoValidationEnum());
+    }
+
+    @Test
+    public void 동일한_이름의_카테고리가_존재하는_경우에_대한_신규_카테고리_등록_시_올바른_리턴값을_확인한다() {
+        // arrange
+        CreateCategoryInfoCommand createCommand = CreateCategoryInfoCommand.builder()
+            .categoryInfoSeq(10)
+            .parentSeq(0)
+            .categoryDepth(1)
+            .categoryName("이미_존재하는_카테고리")
+            .build();
+
+        when(categoryInfoMockRepository.findByCategoryName("이미_존재하는_카테고리")).thenReturn(Optional.of(CategoryInfo.builder()
+            .isDelete(false)
+            .categoryName("이미_존재하는_카테고리").build()));
+
+        // act
+        var result = injectMockCategoryInfoService.createCategoryInfo(createCommand);
+
+        // assert
+        assertEquals(CategoryInfoValidationEnum.CATEGORY_NAME_IS_DUPLICATED, result.getCategoryInfoValidationEnum());
     }
 }
