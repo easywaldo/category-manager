@@ -24,7 +24,7 @@ http://localhost:8089/h2-console/
 
 ### 사용기술
 - Frameworks: SpringBoot
-- ORM Library : JPA
+- ORM Library : JPA, QueryDSL
 - DB: H2
 - WebFlux 를 사용하여 요청과 응답을 NIO 기반에서 작동이 될 수 있도록 구현
 - Swagger를 이용하여 개발코드 문서 기반으로 빠르게 URL 테스트가 가능하도록 환경 구성
