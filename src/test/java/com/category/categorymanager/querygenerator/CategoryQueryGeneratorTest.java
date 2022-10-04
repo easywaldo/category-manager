@@ -68,4 +68,13 @@ class CategoryQueryGeneratorTest {
             result.stream().map(CategoryInfoDto::getCategoryName).collect(Collectors.toList()));
     }
 
+    @Test
+    public void 카테고리_query_dsl_support_test() {
+        List<CategoryInfo> categoryInfoList = categoryInfoRepository.findByName("Women");
+
+        for(CategoryInfo c : categoryInfoList) {
+            System.out.println(c.getCategoryInfoSeq());
+        }
+    }
+
 }
