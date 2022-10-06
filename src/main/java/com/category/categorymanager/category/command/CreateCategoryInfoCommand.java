@@ -1,6 +1,7 @@
 package com.category.categorymanager.category.command;
 
 import com.category.categorymanager.category.entity.CategoryInfo;
+import com.category.categorymanager.config.validator.CategoryInput;
 import com.category.categorymanager.config.validator.RequestValidator;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiParam;
@@ -23,6 +24,7 @@ public class CreateCategoryInfoCommand implements RequestValidator {
 
     @ApiModelProperty(value = "카테고리 이름", position = 1)
     @NotBlank(message = "category name can not be blank")
+    @CategoryInput
     private String categoryName;
     @ApiModelProperty(value = "카테고리 뎁스(1부터 3뎁스까지 허용한다)", position = 2)
     @Min(value = 1)
